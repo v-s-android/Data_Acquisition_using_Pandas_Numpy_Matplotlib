@@ -102,5 +102,191 @@ output:
 Name: bore, dtype: object
 '''
 
+#To see which values are present in a particular column, we can use the ".value_counts()" method:
+df['num-of-doors'].value_counts()
+'''
+num-of-doors
+four    114
+two      89
+Name: count, dtype: int64
+'''
 
+#You can see that four doors is the most common type. We can also use the ".idxmax()" method to calculate the most common type automatically:
+df['num-of-doors'].value_counts().idxmax() # output: 'four'
 
+#replace the missing 'num-of-doors' values by the most frequent 
+df["num-of-doors"] = df["num-of-doors"].replace(np.nan, "four")
+
+#Finally, drop all rows that do not have price data:
+# simply drop whole row with NaN in "price" column
+df.dropna(subset=["price"], axis=0, inplace=True)
+
+# reset index, because we droped two rows
+df.reset_index(drop=True, inplace=True)
+print(df.head())
+
+df.dtypes
+'''
+normalized-losses     object
+bore                  object
+stroke                object
+peak-rpm              object
+price                 object
+'''
+# Convert data types to proper format¶ : All numercial values need to be changed from object to float/int
+df[["bore", "stroke"]] = df[["bore", "stroke"]].astype("float")
+df[["normalized-losses"]] = df[["normalized-losses"]].astype("int")
+df[["price"]] = df[["price"]].astype("float")
+df[["peak-rpm"]] = df[["peak-rpm"]].astype("float")
+
+# Data Standardization
+# Standardization is the process of transforming data into a common format, allowing the researcher to make the meaningful comparison.
+# Convert mpg to L/100km by mathematical operation (235 divided by mpg)
+df['city-L/100km'] = 235/df["city-mpg"]
+# check your transformed data 
+df.head()
+
+#transform mpg to L/100km in the column of "highway-mpg" and change the name of column to "highway-L/100km".
+# transform mpg to L/100km by mathematical operation (235 divided by mpg)
+df["highway-mpg"] = 235/df["highway-mpg"]
+
+# rename column name from "highway-mpg" to "highway-L/100km"
+df.rename(columns={'"highway-mpg"':'highway-L/100km'}, inplace=True)
+
+# check your transformed data 
+df.head()
+
+#Data Normalization
+df['length'] = df['length']/df['length'].max()
+#similary
+df['width'] = df['width']/df['width'].max()
+df['height'] = df['height']/df['height'].max()
+
+df[["length","width","height"]].head() # print these columns
+
+# Binning
+# Binning is a process of transforming continuous numerical variables into discrete categorical 'bins' for grouped analysis.
+import matplotlib as plt
+from matplotlib import pyplot
+plt.pyplot.hist(df["horsepower"])
+
+# set x/y labels and plot title
+plt.pyplot.xlabel("horsepower")
+plt.pyplot.ylabel("count")
+plt.pyplot.title("horsepower bins")
+'''
+Find 3 bins of equal size bandwidth by using Numpy's linspace(start_value, end_value, numbers_generated function.
+Since you want to include the minimum value of horsepower, set start_value = min(df["horsepower"]).
+Since you want to include the maximum value of horsepower, set end_value = max(df["horsepower"]).
+Since you are building 3 bins of equal length, you need 4 dividers, so numbers_generated = 4.
+'''
+bins = np.linspace(min(df["horsepower"]), max(df["horsepower"]), 4)
+print(bins)
+
+#Set group names:
+group_names = ['Low', 'Medium', 'High']
+# Apply the pandas function "cut" to determine what each value of `df['horsepower']` belongs to. 
+
+df['horsepower-binned'] = pd.cut( df['horsepower'], bins , label = group_names, include_lowest = True)
+
+print(df[['horsepower-binned', 'horsepower']])
+'''
+	horsepower	horsepower-binned
+0	111	Low
+1	111	Low
+2	154	Medium
+3	102	Low
+4	115	Low
+'''
+df["horsepower-binned"].value_counts()
+'''
+horsepower-binned
+Low       153
+Medium     43
+High        5
+Name: count, dtype: int64
+'''
+
+# Plot the distribution of each bin:
+
+pyplot.bar(group_names, df["horsepower-binned"].value_counts())
+
+# set x/y labels and plot title
+plt.pyplot.xlabel("horsepower")
+plt.pyplot.ylabel("count")
+plt.pyplot.title("horsepower bins")
+
+# draw historgram of attribute "horsepower" with bins = 3
+plt.pyplot.hist(df["horsepower"], bins = 3)
+
+# set x/y labels and plot title
+plt.pyplot.xlabel("horsepower")
+plt.pyplot.ylabel("count")
+plt.pyplot.title("horsepower bins")
+
+# Indicator Variable
+
+# The column "fuel-type" has two unique values: "gas" or "diesel". Regression doesn't understand words, only numbers.
+#To use this attribute in regression analysis, you can convert "fuel-type" to indicator variables.
+
+fuel_df = pd.get_dummies(df['fuel-type'])
+print(fuel_df.head())
+'''
+diesel	gas
+0	False	True
+1	False	True
+2	False	True
+3	False	True
+4	False	True
+'''
+
+# Change the column names for clarity:
+fuel_df.rename( columns = {'diesel' : 'fuel-type-diesel', 'gas' : 'fuel-type-gas' }, inplace= True)
+print(fuel_df.head())
+'''
+	fuel-type-diesel	fuel-type-gas
+0	  False	  True
+1	  False	  True
+2	  False	  True
+3	  False	  True
+4	  False	  True
+'''
+
+# In the data frame, column 'fuel-type' now has values for 'gas' and 'diesel' as 0s and 1s.
+
+# merge data frame "df" and "fuel_df" 
+df = pd.concat([df, fuel_df], axis=1)
+
+# drop original column "fuel-type" from "df"
+df.drop("fuel-type", axis = 1, inplace=True)
+
+# Convert aspirations
+df['aspiration'].value_counts()
+
+aspiration_df = pd.get_dummies(df['aspiration'])
+print(aspiration_df.head())
+'''
+	std	turbo
+0	True	False
+1	True	False
+2	True	False
+3	True	False
+4	True	False
+'''
+
+# beak into columns
+aspiration_df.rename(columns = {'std' : 'aspiration-std', 'turbo' : 'aspiration-turbo'}, inplace = True)
+print(aspiration_df.head())
+'''
+	aspiration-std	aspiration-turbo
+0	  True	  False
+1	  True	  False
+2	  True	  False
+3	  True	  False
+4	  True	  False
+'''
+# merge the new dataframe to the original datafram
+df = pd.concat([df , aspiration_df ], axis =1)
+#  drop original column "aspiration" from "df"
+df.drop("aspiration", axis = 1, inplace = True)
+df.to_csv('clean_df.csv') # creates a new .csv file 
