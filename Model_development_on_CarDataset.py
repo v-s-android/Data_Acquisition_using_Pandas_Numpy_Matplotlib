@@ -47,3 +47,43 @@ print(lm.intercept_) # 38423.30585815743
 # the value of the slope (b)
 print(lm.coef_) # array([-821.73337832])
 
+#Create a linear regression object called "lm1".
+lm1 = LinearRegression()
+print(lm1)
+#Train the model using "engine-size" as the independent variable and "price" as the dependent variable
+Xeng = df[['engine-size']]
+Yprice = df['price']
+
+lm1.fit(X,Y) # or alternativley lm1.fit(df[['engine-size']], df[['price']])
+Yhat = lm1.predict(X)
+print(Yhat[0:5]) # array([16236.50464347, 16236.50464347, 17058.23802179, 13771.3045085 , 20345.17153508])
+
+# Intercept and slope
+print(lm1.intercept_)
+print(lm1.coef_)
+
+'''
+Multiple Linear Regression : 
+
+Other good predictors of price could be: Horsepower, Curb-weight, Engine-size, Highway-mpg
+Developing a model using these variables as the predictor variables.
+'''
+Z = df[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']]
+#Fit the linear model using the four above-mentioned variables.
+lm.fit(Z , df['price'])
+
+Yhat = lm.predict(Z)
+Yhat[0:5]
+
+lm.intercept_ # -15806.62462632922
+lm.coef_ # array([53.49574423,  4.70770099, 81.53026382, 36.05748882])
+# Price = -15678.742628061467 + 52.65851272 x horsepower + 4.69878948 x curb-weight + 81.95906216 x engine-size + 33.58258185 x highway-mpg
+
+# Similarly : Create and train a Multiple Linear Regression model "lm2" where the response variable is "price", and the predictor variable is "normalized-losses" and "highway-mpg".
+lm2 = LinearRegression()
+lm2.fit(df[['normalized-losses' , 'highway-mpg']],df['price'])
+
+print(lm2.coef_) # [   1.49789586 -820.45434016]
+print(lm2.intercept_) # 38201.313272457344
+
+
