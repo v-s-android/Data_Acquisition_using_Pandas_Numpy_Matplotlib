@@ -86,4 +86,38 @@ lm2.fit(df[['normalized-losses' , 'highway-mpg']],df['price'])
 print(lm2.coef_) # [   1.49789586 -820.45434016]
 print(lm2.intercept_) # 38201.313272457344
 
+# 2. Model Evaluation Using Visualization
+import seaborn as sns
+
+'''
+This plot will show a combination of a scattered data points (a scatterplot), as well as the fitted linear regression line going through the data.
+This will give us a reasonable estimate of the relationship between the two variables, the strength of the correlation,
+as well as the direction (positive or negative correlation).
+'''
+# Let's visualize highway-mpg as potential predictor variable of price:
+
+width = 8
+height = 6
+plt.figure(figsize=(width, height))
+sns.regplot(x="highway-mpg", y="price", data=df)
+plt.ylim(0,)
+
+# similarly for peak-rpm
+
+plt.figure(figsize = (width, height))
+sns.regplot(x = 'peak-rpm', y = 'price', data = df)
+plt.ylim(0,)
+
+# Given the regression plots above, is "peak-rpm" or "highway-mpg" more strongly correlated with "price"? Use the method ".corr()"
+df[['peak-rpm','ighway-mpg','price']].corr()
+'''
+	            peak-rpm	highway-mpg	       price
+peak-rpm	    1.000000	    -0.058598	  -0.101616
+highway-mpg	    -0.058598	    1.000000	   -0.704692
+price	        -0.101616	    -0.704692	    1.000000
+
+# The variable "highway-mpg" has a stronger correlation with "price", it is approximate -0.704692  compared to "peak-rpm" which is approximate -0.101616.
+'''
+
+
 
