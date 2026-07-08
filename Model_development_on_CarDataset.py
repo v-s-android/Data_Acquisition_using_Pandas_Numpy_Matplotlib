@@ -118,6 +118,19 @@ price	        -0.101616	    -0.704692	    1.000000
 
 # The variable "highway-mpg" has a stronger correlation with "price", it is approximate -0.704692  compared to "peak-rpm" which is approximate -0.101616.
 '''
+# Residual Plot
+'''
+What is a residual?
 
+The difference between the observed value (y) and the predicted value (Yhat) is called the residual (e).
+When we look at a regression plot, the residual is the distance from the data point to the fitted regression line.
+
+So what is a residual plot?
+
+A residual plot is a graph that shows the residuals on the vertical y-axis and the independent variable on the horizontal x-axis.
+'''
+plt.figure(figsize =(width, height))
+sns.residplot( x = df['highway-mpg'], y = df['price'] ) # notice we are using the directly the dataframe column
+plt.show()
 
 
