@@ -133,4 +133,71 @@ plt.figure(figsize =(width, height))
 sns.residplot( x = df['highway-mpg'], y = df['price'] ) # notice we are using the directly the dataframe column
 plt.show()
 
+# Multiple Linear Regression: Distribution plot
+'''
+How do we visualize a model for Multiple Linear Regression? This gets a bit more complicated because you can't visualize it with regression or residual plot.
+
+One way to look at the fit of the model is by looking at the distribution plot. We can look at the distribution of the fitted values that result from the model and
+compare it to the distribution of the actual values.
+'''
+Y_hat = lm.predict(Z) # first make a pridiction
+plt.figure(figsize=(width,height))
+
+ax1 = sns.distplot(df['price'], hist = False, color = 'r' , label = 'Actual Value')
+sns.distplot(Y_hat, hist = False, color = 'r' , label = 'Fitted Value')
+
+plt.title("Actual vs Fitted Values for Price")
+plt.xlabel("Price (in dollars)")
+plt.ylabel("Proportion of Cars")
+plt.show()
+plt.close()
+
+# Polynomial regression
+'''
+Polynomial regression is a particular case of the general linear regression model or multiple linear regression models.
+We get non-linear relationships by squaring or setting higher-order terms of the predictor variables.
+'''
+def PlotPolly(model, independent_variable, dependent_variabble, x_label):
+    x_new = np.linspace(15, 55, 100)
+    y_new = model(x_new)
+
+    plt.plot(independent_variable, dependent_variabble, '.', x_new, y_new, '-')
+    plt.title('Polynomial Fit with Matplotlib for Price ~ Length')
+    ax = plt.gca()
+    ax.set_facecolor((0.898, 0.898, 0.898))
+    fig = plt.gcf()
+    plt.xlabel(x_label)
+    plt.ylabel('Price of Cars')
+
+    plt.show()
+    plt.close()
+#The variables:
+x = df['highway-mpg']
+y = df['price']
+
+# fit the polynomial using the function "polyfit", then use the function "poly1d" to display the polynomial function.
+# Here we use a polynomial of the 3rd order (cubic) 
+f = np.polyfit( x, y, 3)
+p = np.poly1d(f)
+print(p)
+'''
+        3         2
+-1.557 x + 204.8 x - 8965 x + 1.379e+05
+'''
+# plot the function:
+PlotPolly( p , x , y , "highway-mpg") # shows the plot
+
+# Similarly Create 11 order polynomial model with the variables x and y from above.
+
+f1 = np.polyfit(x, y , 11)
+p1 = np.poly1d(f1)
+print(p1)
+'''
+11             10             9           8         7
+-1.243e-08 x  + 4.722e-06 x  - 0.0008028 x + 0.08056 x - 5.297 x
+          6        5             4             3             2
+ + 239.5 x - 7588 x + 1.684e+05 x - 2.565e+06 x + 2.551e+07 x - 1.491e+08 x + 3.879e+08
+'''
+PlotPolly( p1, x , y, 'highway-mpg')
+
 
