@@ -105,6 +105,83 @@ print("mean_squared_error of Multiple Linear Regression",mse2) mean_squared_erro
 Use the variable "CPU_frequency" to create Polynomial features. Try this for 3 different values of polynomial degrees.
 Remember that polynomial fits are done using `numpy.polyfit`. 
 '''
+f1 = np.polyfit(df['CPU_frequency'], df['Price'], 1)
+p1 = np.poly1d(f1)
+
+f3 = np.polyfit(df['CPU_frequency'], df['Price'], 3)
+p3 = np.poly1d(f3)
+
+f5 = np.polyfit(df['CPU_frequency'], df['Price'], 5)
+p5 = np.poly1d(f5)
+
+# Plot the regression output against the actual data points to note how the data fits in each case. To plot the polynomial response over 
+# the actual data points, you have the function shown below.
+def PlotPolly(model, independent_variable, dependent_variabble, Name):
+    x_new = np.linspace(independent_variable.min(),independent_variable.max(),100)
+    y_new = model(x_new)
+
+    plt.plot(independent_variable, dependent_variabble, '.', x_new, y_new, '-')
+    plt.title(f'Polynomial Fit for Price ~ {Name}')
+    ax = plt.gca()
+    ax.set_facecolor((0.898, 0.898, 0.898))
+    fig = plt.gcf()
+    plt.xlabel(Name)
+    plt.ylabel('Price of laptops')
+
+# Call for function of degree 1
+PlotPolly(p1, df['CPU_frequency'], df['Price'] , 'CPU_frequency')
+# Call for function of degree 3
+PlotPolly( p3, df['CPU_frequency'], df['Price'] , 'CPU_frequency')
+# Call for function of degree 5
+PlotPolly( p5, df['CPU_frequency'], df['Price'] , 'CPU_frequency')
+
+# calculate the R^2 and MSE values for these fits. For polynomial functions, the function sklearn.metrics.r2_score will be used to calculate R^2 values.
+from sklearn.metrics import r2_score
+
+X = df[['CPU_frequency']]
+Y = df['Price'] # you can use r2_score(Y, p1(x))
+print('The R-square value for 1st degree polynomial is: ', r2_score(df['Price'], p1(X)))
+print('the mean_squared_error for 1st degree polynomial is: ',mean_squared_error(df['Price'], p1(X)))
+
+print('The R-square value for 3rd degree polynomial is: ', r2_score(df['Price'], p3(X)))
+print('the mean_squared_error for 3rd degree polynomial is: ',mean_squared_error(df['Price'], p3(X)))
+
+print('The R-square value for 5th degree polynomial is: ', r2_score(df['Price'], p5(X)))
+print('the mean_squared_error for 5th degree polynomial is: ',mean_squared_error(df['Price'], p5(X)))
+'''
+The R-square value for 1st degree polynomial is:  0.13444363210243282
+the mean_squared_error for 1st degree polynomial is:  284583.4405868628
+The R-square value for 3rd degree polynomial is:  0.26692640796530986
+the mean_squared_error for 3rd degree polynomial is:  241024.8630384881
+The R-square value for 5th degree polynomial is:  0.3030822706443803
+the mean_squared_error for 5th degree polynomial is:  229137.29548053825
+'''
+
+# Task 4 - Pipeline
+'''
+Create a pipeline that performs parameter scaling, Polynomial Feature generation and Linear regression. Use the set of multiple features as before to create this pipeline.
+'''
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+
+Z = df[['CPU_frequency', 'RAM_GB', 'Storage_GB_SSD', 'CPU_core', 'OS', 'GPU', 'Category']]
+Input = [('scale',StandardScaler()), ('polynomial', PolynomialFeatures(include_bias=False)), ('model',LinearRegression())]
+pipe = Pipeline(Input)
+Z = Z.astype(float) # converting all values to float 
+pipe.fit( Z, df['Price']) 
+Y_pipe = pipe.predict(Z) 
+print(Y_pipe[0:5]) # array([1371. , 1159.5, 1389. ,  -52.5, 1602.5])
+
+# Evaluate the MSE and R^2 values for the this predicted output.
+print("R^2 for multi-variable polynomial pipeline is: ", r2_score(df['Price'], Y_pipe ))
+print("MSE for multi-variable polynomial pipeline is: ", mean_squared_error(df['Price'], Y_pipe))
+'''
+R^2 for multi-variable polynomial pipeline is:  0.2563325298426047
+MSE for multi-variable polynomial pipeline is:  244507.9894957983
+
+You should now have seen that the values of R^2 increase as we go from Single Linear Regression to Multiple Linear Regression. 
+Further, if we go for multiple linear regression extended with polynomial features, we get an even better R^2 value.
+'''
 
 
 
