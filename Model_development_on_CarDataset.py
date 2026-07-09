@@ -227,7 +227,7 @@ print(pipe)
 #Then, we can normalize the data, perform a transform and fit the model simultaneously.
 # Z = df[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']]
 Z = Z.astype(float)
-pipe(Z, y)
+pipe.fit(Z, y)
 
 # Similarly, we can normalize the data, perform a transform and produce a prediction simultaneously.
 ypipe=pipe.predict(Z)
