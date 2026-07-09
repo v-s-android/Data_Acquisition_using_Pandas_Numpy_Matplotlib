@@ -200,4 +200,187 @@ print(p1)
 '''
 PlotPolly( p1, x , y, 'highway-mpg')
 
+# We can perform a polynomial transform on multiple features
+from sklearn.preprocessing import PolynomialFeatures
 
+# create a PolynomialFeatures object of degree 2
+pf = PolynomialFeatures(degree = 2 )
+Z_pf = pf.fit_transform(Z)
+Z.shape # (201, 2) In the original data, there are 201 samples and 2 features.
+Z_pf.shape # (201 , 6) After the transformation, there are 201 samples and 6 features.
+
+# Piplines
+'''
+Data Pipelines simplify the steps of processing the data. We use the module Pipeline to create a pipeline. We also use StandardScaler as a step in our pipeline.
+'''
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+
+# We create the pipeline by creating a list of tuples including the name of the model or estimator and its corresponding constructor.
+Input=[('scale',StandardScaler()), ('polynomial', PolynomialFeatures(include_bias=False)), ('model',LinearRegression())]
+
+# We input the list as an argument to the pipeline constructor:
+pipe = Pipeline(Input)
+print(pipe)
+
+# First, we convert the data type Z to type float to avoid conversion warnings that may appear as a result of StandardScaler taking float inputs.
+#Then, we can normalize the data, perform a transform and fit the model simultaneously.
+# Z = df[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']]
+Z = Z.astype(float)
+pipe(Z, y)
+
+# Similarly, we can normalize the data, perform a transform and produce a prediction simultaneously.
+ypipe=pipe.predict(Z)
+ypipe[0:4] # array([15388.77780567, 15388.77780567, 16771.84474515, 11641.85647791])
+
+# Create a pipeline that standardizes the data, then produce a prediction using a linear regression model using the features Z and target y.
+
+Input = [('scale', StandardScaler()),('model' , LinearRegression())]
+pipe = Pipeline(Input)
+pipe.fit(Z, y) # Z = df[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']]
+
+ypipe = pipe.predict(Z)
+ypipe[0:10]
+'''
+array([16231.78938339, 16231.78938339, 17052.24372355, 13833.33798916,
+       20396.97271047, 17872.69806371, 17926.6223148 , 17872.69806371,
+       22028.89401561, 14695.7334135 ])
+'''
+
+# Two very important measures that are often used in Statistics to determine the accuracy of a model are:
+
+# R^2 / R-squared
+# Mean Squared Error (MSE)
+
+# Model 1: Simple Linear Regression
+#highway_mpg_fit
+lm.fit(X, Y)
+# Find the R^2
+print('The R-square is: ', lm.score(X, Y)) # The R-square is:  0.4965911884339176
+
+'''
+We can say that ~49.659% of the variation of the price is explained by this simple linear model "horsepower_fit".
+
+Let's calculate the MSE:
+
+We can predict the output i.e., "yhat" using the predict method, where X is the input variable:
+'''
+Yhat = lm.predict(X)
+print('The output of the first four predicted value is: ', Yhat[0:4]) 
+# The output of the first four predicted value is:  [16236.50464347 16236.50464347 17058.23802179 13771.3045085 ]
+
+# import the function mean_squared_error from the module metrics:
+from sklearn.metrics import mean_squared_error
+
+mse = mean_squared_error(df['price'], Yhat)
+print('The mean square error of price and predicted value is: ', mse)
+# The mean square error of price and predicted value is:  31635042.944639888
+
+# Model 2: Multiple Linear Regression
+Z = df[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']]
+Y = df['price']
+lm.fit( Z , Y )
+print("R-squared ", lm.score(Z , Y))
+'''
+The R-square is:  0.8093562806577457
+We can say that ~80.896 % of the variation of price is explained by this multiple linear regression "multi_fit".
+'''
+
+Y_predict_multifit = lm.predict(Z)
+
+mse1 = mean_squared_error(Z, Y_predict_multifit)
+print("mean squared error" , mse1)
+'''
+The mean square error of price and predicted value using multifit is:  11980366.87072649
+'''
+
+# Model 3: Polynomial Fit
+from sklearn.metrics import r2_score
+x = df['highway-mpg']
+y = df['price']
+
+# Here we use a polynomial of the 3rd order (cubic) 
+f = np.polyfit(x, y, 3)
+p = np.poly1d(f)
+
+r_squared = r2_score(y, p(x))
+print('The R-square value is: ', r_squared)
+'''
+The R-square value is:  0.674194666390652
+We can say that ~67.419 % of the variation of price is explained by this polynomial fit.
+'''
+# We can also calculate the MSE:
+mean_squared_error(y , p(x))
+'''
+20474146.426361218
+'''
+
+# 5. Prediction and Decision Making
+'''
+Prediction¶
+In the previous section, we trained the model using the method fit. Now we will use the method predict to produce a prediction.
+Lets import pyplot for plotting; we will also be using some functions from numpy.
+'''
+# Create a new input:
+new_input = np.arange(1, 100, 1).reshape(-1, 1)
+
+X = df[['highway-mpg']]
+Y = df['price']
+
+lm.fit(X, Y)
+
+Y_hat = lm.predict(new_input)
+print(Y_hat[0:5]) # array([37601.57247984, 36779.83910151, 35958.10572319, 35136.37234487, 34314.63896655])
+
+plt.plot(new_input, Y_hat)
+plt.show()
+
+'''
+Decision Making: Determining a Good Model Fit
+
+Now that we have visualized the different models, and generated the R-squared and MSE values for the fits, how do we determine a good model fit?
+
+What is a good R-squared value?
+When comparing models, the model with the higher R-squared value is a better fit for the data.
+
+What is a good MSE?
+When comparing models, the model with the smallest MSE value is a better fit for the data.
+
+Let's take a look at the values for the different models.
+Simple Linear Regression: Using Highway-mpg as a Predictor Variable of Price.
+
+R-squared: 0.49659118843391759
+MSE: 3.16 x10^7
+Multiple Linear Regression: Using Horsepower, Curb-weight, Engine-size, and Highway-mpg as Predictor Variables of Price.
+
+R-squared: 0.80896354913783497
+MSE: 1.2 x10^7
+Polynomial Fit: Using Highway-mpg as a Predictor Variable of Price.
+
+R-squared: 0.6741946663906514
+MSE: 2.05 x 10^7
+
+Simple Linear Regression Model (SLR) vs Multiple Linear Regression Model (MLR)
+Usually, the more variables you have, the better your model is at predicting, but this is not always true. Sometimes you may not have enough data,
+you may run into numerical problems, or many of the variables may not be useful and even act as noise. As a result, you should always check the MSE and R^2.
+
+In order to compare the results of the MLR vs SLR models, we look at a combination of both the R-squared and MSE to make the best conclusion about the fit of the model.
+
+MSE: The MSE of SLR is 3.16x10^7 while MLR has an MSE of 1.2 x10^7. The MSE of MLR is much smaller.
+R-squared: In this case, we can also see that there is a big difference between the R-squared of the SLR and the R-squared of the MLR. The R-squared for the SLR (~0.497)
+is very small compared to the R-squared for the MLR (~0.809).
+This R-squared in combination with the MSE show that MLR seems like the better model fit in this case compared to SLR.
+
+Simple Linear Model (SLR) vs. Polynomial Fit
+MSE: We can see that Polynomial Fit brought down the MSE, since this MSE is smaller than the one from the SLR.
+R-squared: The R-squared for the Polynomial Fit is larger than the R-squared for the SLR, so the Polynomial Fit also brought up the R-squared quite a bit.
+Since the Polynomial Fit resulted in a lower MSE and a higher R-squared, we can conclude that this was a better fit model than the simple linear regression for
+predicting "price" with "highway-mpg" as a predictor variable.
+
+Multiple Linear Regression (MLR) vs. Polynomial Fit
+MSE: The MSE for the MLR is smaller than the MSE for the Polynomial Fit.
+R-squared: The R-squared for the MLR is also much larger than for the Polynomial Fit.
+
+Conclusion
+Comparing these three models, we conclude that the MLR model is the best model to be able to predict price from our dataset. This result makes sense since we have 27 variables in total and we know that more than one of those variables are potential predictors of the final car price.
+'''
