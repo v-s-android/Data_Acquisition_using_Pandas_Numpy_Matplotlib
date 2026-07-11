@@ -192,4 +192,125 @@ print(rc.mean())
 0.5166761697127429
 '''
 
+'''
+You can also use the function 'cross_val_predict' to predict the output. The function splits up the data into the specified number of folds,
+with one fold for testing and the other folds are used for training. First, import the function:
+'''
+from sklearn.model_selection import cross_val_predict
+#We input the object, the feature "horsepower", and the target data y_data. The parameter 'cv' determines the number of folds. In this case, it is 4. We can produce an output:
+r_cross_predict = cross_val_predict( lre, x_data[['horsepower']], y_data, cv =4 )
+print(r_cross_predict[0:5])
+# array([14141.63807508, 14141.63807508, 20814.29423473, 12745.03562306, 14762.35027598])
+
+# Part 2: Overfitting, Underfitting and Model Selection
+'''
+It turns out these differences are more apparent in Multiple Linear Regression and Polynomial Regression so we will explore overfitting in that context.
+
+Let's create Multiple Linear Regression objects and train the model using 'horsepower', 'curb-weight', 'engine-size' and 'highway-mpg' as features.
+'''
+lr = LinearRegression()
+x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size = 0.10, random_state = 1)
+lr.fit(x_train[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']], y_train) # we always use the training set for fir the lodel
+
+#Prediction using training data:
+yhat_train_predict = lr.predict(x_train[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']])
+print(yhat_train_predict[0:5])  # array([ 7426.6731551 , 28323.75090803, 14213.38819709,  4052.34146983, 34500.19124244])
+#Prediction using test data:
+yhat_test_predict = lr.predict(x_test[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']])
+print(yhat_test_predict[0:5]) #array([11349.35089149,  5884.11059106, 11208.6928275 ,  6641.07786278, 15565.79920282])
+
+# Let's perform some model evaluation using our training and testing data separately. First, we import the seaborn and matplotlib library for plotting.
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Let's examine the distribution of the predicted values of the training data.
+Title = "Distribution  Plot of  Predicted Value Using Training Data vs Training Data Distribution"
+DistributionPlot(y_train , yhat_train_predict, "Actual Values (Train)", "Predicted Values (Train)", Title)
+# plots the graphs
+
+# Let's examine the distribution of the predicted values of the test data.
+
+Title = "Distribution  Plot of  Predicted Value Using Test Data vs Data Distribution of Test Data"
+DistributionPlot(y_test, yhat_test_predict, "Actual Values (Test)","Predicted Values (Test)", Title)
+# plots the graphs
+'''
+Overfitting
+Overfitting occurs when the model fits the noise, but not the underlying process. Therefore, when testing your model using the test set, your model does not perform as well since it is modelling noise, not the underlying process that generated the relationship.
+Let's create a degree 5 polynomial model.
+'''
+from sklearn.preprocessing import PolynomialFeatures
+
+#Let's use 55 percent of the data for training and the rest for testing:
+x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size = 0.45, random_state = 0)
+
+# We will perform a degree 5 polynomial transformation on the feature 'horsepower'.
+pr = PolynomialFeatures(degree = 5)
+x_train_pr = pr.fit_transform(x_train[['horsepower']])
+x_test_pr = pr.fit_transform(x_test[['horsepower']])
+
+# now lets create a linearregression model and train it
+lr = LinearRegression()
+lr.fit(x_train_pr, y_train)
+# We can see the output of our model using the method "predict." We assign the values to "yhat".
+
+yhat = lr.predict(x_test_pr)
+yhat[0:5] # array([ 6728.58641321,  7307.91998787, 12213.73753589, 18893.37919224, 19996.10612156])
+
+# Let's take the first five predicted values and compare it to the actual targets.
+
+print("Predicted values",yhat[0:5] )
+print("Actual values ",y_test[0:5].values)
+'''
+Predicted values: [ 6728.58641321  7307.91998787 12213.73753589 18893.37919224 19996.10612156]
+Actual values: [ 6295.     10698.     13860.     13499. 1    5750.]
+'''
+# We will use the function "PollyPlot" that we defined at the beginning of the lab to display the training data, testing data, and the predicted function.
+# PollyPlot(xtrain, xtest, y_train, y_test, lr,poly_transform)
+PollyPlot( x_train['horsepower'], x_test['horsepower'], y_train, y_test, lr, pr) # plots the graph
+
+# R^2 of the training data:
+print(lr.score(x_train_pr , y_train)) # 0.5567716897754004
+
+# R^2 of the test data:
+print(lr.score(x_test_pr, y_test)) # -29.87099623387278
+'''
+We see the R^2 for the training data is 0.5567 while the R^2 on the test data was -29.87. The lower the R^2, the worse the model. A negative R^2 is a sign of overfitting.
+'''
+
+# Let's see how the R^2 changes on the test data for different order polynomials and then plot the results:
+Rsqu_test = []
+
+order = [1, 2, 3, 4]
+for n in order:
+    pr = PolynomialFeatures(degree=n)
+    
+    x_train_pr = pr.fit_transform(x_train[['horsepower']])
+    
+    x_test_pr = pr.fit_transform(x_test[['horsepower']])    
+    
+    lr.fit(x_train_pr, y_train)
+    
+    Rsqu_test.append(lr.score(x_test_pr, y_test))
+
+plt.plot(order, Rsqu_test)
+plt.xlabel('order')
+plt.ylabel('R^2')
+plt.title('R^2 Using Test Data')
+plt.text(3, 0.75, 'Maximum R^2 ')  # plots the graph
+
+# The following function will be used in the next section. Please run the cell below.
+def f(order, test_data):
+    x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=test_data, random_state=0)
+    pr = PolynomialFeatures(degree=order)
+    x_train_pr = pr.fit_transform(x_train[['horsepower']])
+    x_test_pr = pr.fit_transform(x_test[['horsepower']])
+    poly = LinearRegression()
+    poly.fit(x_train_pr,y_train)
+    PollyPlot(x_train['horsepower'], x_test['horsepower'], y_train, y_test, poly,pr)
+
+# The following interface allows you to experiment with different polynomial orders and different amounts of data.
+interact(f, order=(0, 6, 1), test_data=(0.05, 0.95, 0.05)) # plots teh graph
+
+
 
