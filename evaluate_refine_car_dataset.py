@@ -86,10 +86,10 @@ def PollyPlot(xtrain, xtest, y_train, y_test, lr,poly_transform):
 Part 1: Training and Testing
 An important step in testing your model is to split your data into training and testing data. We will place the target data price in a separate dataframe y_data:
 '''
-y_data = df['price']
+y_data = df['price'] # This contains the target values (labels or dependent variable).
 
 #now drop the price column in df and assign the table to x_data
-x_data = df.drop('price', axis = 1)
+x_data = df.drop('price', axis = 1) # This contains your input features (independent variables).
 x_data.head()
 
 '''
@@ -99,13 +99,29 @@ from sklearn.model_selection import train_test_split
 # x_data is the table without the price
 # y_data is just the price column
 # The test_size parameter sets the proportion of data that is split into the testing set. In the above, the testing set is 10% of the total dataset.
+# random_state : Without it, each time you run the code, the data is split differently.and  with it you get the same split every time, making your results reproducible.
 x_train, x_test, y_train , y_test = train_test_split( x_data, y_data , test_size = 0.1, random_state = 1)
+
 
 print("number of test sample ", x_test.shape[0])
 print("number of train sample", x_train.shape[0])
 '''
 number of test samples : 21
 number of training samples: 180
+
+test_size=0.10
+
+This means:
+
+10% of the data goes into the test set.
+90% goes into the training set.
+
+For example, if you have 1,000 samples:
+
+x_train → 900 samples
+x_test → 100 samples
+y_train → 900 labels
+y_test → 100 labels
 '''
 # Similarly Q1: Use the function "train_test_split" to split up the dataset such that 40% of the data samples will be utilized for testing. Set the parameter "random_state" equal to zero.
 x_train1, x_test1, y_train1, y_test1 = train_test_split(x_data,y_data, test_size= 0.4, random_state = 0)
@@ -119,14 +135,14 @@ number of training samples: 120
 # Let's import LinearRegression from the module linear_model.
 from sklearn.linear_model import LinearRegression
 
-lin_reg = LinearRegression()
+lre = LinearRegression()
 # We fit the model using the feature "horsepower":
-lin_reg.fit(x_train[['horsepower']], y_train) # training data
+lre.fit(x_train[['horsepower']], y_train) # training data
 
 # calculate the R^2 on the test data:
-print(lin_reg.score(x_test[['horsepower']] , y_test)) # 0.3635875575078824
+print(lre.score(x_test[['horsepower']] , y_test)) # 0.3635875575078824
 # calculate the R^2 on the train data:
-print(lin_reg.score(x_train[['horsepower']], y_train)) # 0.6619724197515103
+print(lre.score(x_train[['horsepower']], y_train)) # 0.6619724197515103
 '''
 We can see the R^2 is much smaller using the test data compared to the training data.
 '''
@@ -136,18 +152,44 @@ We can see the R^2 is much smaller using the test data compared to the training 
 # The test_size parameter sets the proportion of data that is split into the testing set. In the above, the testing set is 10% of the total dataset.
 x_train1, x_test1, y_train1, y_test1 = train_test_split( x_data, y_data, test_size = 0.4, random_state = 0)
 
-lre = LinearRegression()
+lre1 = LinearRegression()
 
-lre.fit(x_train1[['horsepower']], y_train1)
+lre1.fit(x_train1[['horsepower']], y_train1)
 
-print("test data R^2 value ", lre.score(x_test1[['horsepower']], y_test1)) # test data R^2 value  0.7139364665406973
+print("test data R^2 value ", lre1.score(x_test1[['horsepower']], y_test1)) # test data R^2 value  0.7139364665406973
 
-print("train data R^2 value ", lre.score(x_train1[['horsepower']], y_train1)) # train data R^2 value  0.5754067463583004
+print("train data R^2 value ", lre1.score(x_train1[['horsepower']], y_train1)) # train data R^2 value  0.5754067463583004
 '''
 R^2 value of test data is more than R^2 value of train data
 '''
 
+#Cross-Validation Score
 
+# Let's import cross_val_score from the module model_selection.
+from sklearn.model_selection import cross_val_score
 
+# We input the object, the feature ("horsepower"), and the target data (y_data). The parameter 'cv' determines the number of folds. In this case, it is 4.
+r_cross = cross_val_score( lre , x_data[['horsepower']] , y_data , cv = 4)
+# The default scoring is R^2. Each element in the array has the average R^2 value for the fold:
+print(r_cross) # [0.7746232  0.51716687 0.74785353 0.04839605]
+
+# We can calculate the average and standard deviation of our estimate:
+print("The mean of the folds are ", r_cross.mean())
+print("standard deviation ", r_cross.std())
+'''
+The mean of the folds are 0.5220099150421197 and the standard deviation is 0.29118394447560203
+'''
+# NEXT, We can use negative squared error as a score by setting the parameter 'scoring' metric to 'neg_mean_squared_error'.
+
+print("the score (neg_mean_squared_error) " , -1 * cross_val_score( lre , x_data[['horsepower']], y_data, cv = 4, scoring = 'neg_mean_squared_error'))
+# [20254142.84026702 43745493.26505171 12539630.34014929 17561927.72247586]
+
+# Q3: Calculate the average R^2 using two folds, then find the average R^2 for the second fold utilizing the "horsepower" feature:
+#The R2 score is nothing but the cross_val_score
+rc = cross_val_score( lre, x_data[['horsepower']], y_data, cv = 2)
+print(rc.mean())
+'''
+0.5166761697127429
+'''
 
 
