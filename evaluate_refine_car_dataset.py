@@ -312,5 +312,32 @@ def f(order, test_data):
 # The following interface allows you to experiment with different polynomial orders and different amounts of data.
 interact(f, order=(0, 6, 1), test_data=(0.05, 0.95, 0.05)) # plots teh graph
 
+#Question #4a): We can perform polynomial transformations with more than one feature. Create a "PolynomialFeatures" object "pr1" of degree two.
+x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size = 0.45, random_state=0)
+pr1 = PolynomialFeatures(degree=2)
+
+# Question #4b) Transform the training and testing samples for the features 'horsepower', 'curb-weight', 'engine-size' and 'highway-mpg'. Hint: use the method "fit_transform".
+x_train_pr1 = pr1.fit_transform(x_train[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']])
+x_test_pr1 = pr1.fit_transform(x_test[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']])
+
+# Question #4c) How many dimensions does the new feature have? Hint: use the attribute "shape".
+print(x_train_pr1.shape) # (110, 15) #there are now 15 features
+print(x_test_pr1.shape) # (91, 15) #there are now 15 features
+
+# Question #4d): Create a linear regression model "poly1". Train the object using the method "fit" using the polynomial features.
+lr = LinearRegression()
+lr.fit(x_train_pr1 , y_train)
+
+# Question #4e): Use the method "predict" to predict an output on the polynomial features, then use the function "DistributionPlot"
+#to display the distribution of the predicted test output vs. the actual test data.
+y_hat = lr.predict(x_test_pr1)
+title = 'Distribution  Plot of  Predicted Value Using Test Data vs Data Distribution of Test Data'
+DistributionPlot(y_test, y_hat, "Actual values(Test)", "Predicted Values (Test)" ,title) # plots the graph
+
+# Question #4f):  Using the distribution plot above, describe (in words) the two regions where the predicted prices are less accurate than the actual prices.
+'''
+The predicted value is higher than actual value for cars where the price $10,000 range, conversely the predicted price is lower than the price cost in the $30,000
+to $40,000 range. As such the model is not as accurate in these ranges.
+'''
 
 
