@@ -340,4 +340,129 @@ The predicted value is higher than actual value for cars where the price $10,000
 to $40,000 range. As such the model is not as accurate in these ranges.
 '''
 
+#Part 3: Ridge Regression
+'''
+we will review Ridge Regression and see how the parameter alpha changes the model. Just a note, here our test data will be used as validation data.
 
+Let's perform a degree two polynomial transformation on our data.
+'''
+
+pr = PolynomialFeatures(degree = 2)
+x_train_pr = pr.fit_transform(x_train[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg','normalized-losses','symboling']])
+x_test_pr = pr.fit_transform(x_test[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg','normalized-losses','symboling']])
+# import Ridge
+from sklearn.linear_model import Ridge
+
+# Let's create a Ridge regression object, setting the regularization parameter (alpha) to 0.1
+RidgeModel = Ridge(alpha = 1)
+# Like regular regression, you can fit the model using the method fit.
+RidgeModel.fit(x_train_pr, y_train)
+# Similarly, you can obtain a prediction:
+y_hat = RidgeModel.predict(x_test_pr)
+
+print('predicted:', yhat[0:4])
+print('test set :', y_test[0:4].values)
+'''
+predicted: [ 6570.82441941  9636.24891471 20949.92322738 19403.60313255]
+test set : [ 6295. 10698. 13860. 13499.]
+'''
+
+# We select the value of alpha that minimizes the test error. To do so, we can use a for loop. We have also created a progress bar to see how many iterations we have completed so far.
+from tqdm import tqdm
+
+Rsqu_test = []
+Rsqu_train = []
+dummy1 = []
+Alpha = 10 * np.array(range(0,1000))
+pbar = tqdm(Alpha)
+
+for alpha in pbar:
+    RigeModel = Ridge(alpha=alpha) 
+    RigeModel.fit(x_train_pr, y_train)
+    test_score, train_score = RigeModel.score(x_test_pr, y_test), RigeModel.score(x_train_pr, y_train)
+    
+    pbar.set_postfix({"Test Score": test_score, "Train Score": train_score})
+
+    Rsqu_test.append(test_score)
+    Rsqu_train.append(train_score)
+'''
+100%|██████████| 1000/1000 [00:01<00:00, 810.37it/s, Test Score=0.564, Train Score=0.859]
+'''
+# We can plot out the value of R^2 for different alphas:
+
+width = 8
+height = 6
+plt.figure(figsize=(width, height))
+
+plt.plot(Alpha,Rsqu_test, label='validation data  ')
+plt.plot(Alpha,Rsqu_train, 'r', label='training Data ')
+plt.xlabel('alpha')
+plt.ylabel('R^2')
+plt.legend()
+
+# Question #5):  Perform Ridge regression. Calculate the R^2 using the polynomial features, use the training data to train the model and use the test data
+#to test the model. The parameter alpha should be set to 10.
+pr=PolynomialFeatures(degree=2)
+x_train_pr=pr.fit_transform(x_train[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg','normalized-losses','symboling']])
+x_test_pr=pr.fit_transform(x_test[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg','normalized-losses','symboling']])
+
+ridge_model = Ridge(alpha = 10) # setting alpha to 10
+ridge_model.fit(x_train_pr , y_train)
+y_hat = ridge_model.predict(x_test_pr)
+
+print('predicted:', y_hat[0:5])
+print('test set :', y_test[0:5].values)
+print("R^2 ", RigeModel.score(x_test_pr, y_test))
+'''
+predicted: [ 6472.05406775  9537.15585237 21078.08955884 19750.77444841
+ 21339.40311655]
+test set : [ 6295. 10698. 13860. 13499. 15750.]
+R^2  0.5637701868993872
+'''
+
+# Part 4: Grid Search
+'''
+The term alpha is a hyperparameter. Sklearn has the class GridSearchCV to make the process of finding the best hyperparameter simpler.
+'''
+from sklearn.model_selection import GridSearchCV
+
+# We create a dictionary of parameter values:
+parameters1= [{'alpha': [0.001, 0.1, 1, 10, 100, 1000, 10000, 100000, 100000]}]
+parameters1
+# Create a Ridge regression object:
+RR = Ridge()
+# Create a ridge grid search object:
+grid_serach_cv_model = GridSearchCV( RR , parameters1 , cv = 4)
+# Fit the model y_data = df['price']:
+grid_serach_cv_model.fit(x_data[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']], y_data)
+
+# The object finds the best parameter values on the validation data. We can obtain the estimator with the best parameters and assign it to the variable BestRR as follows:
+BestRR = grid_serach_cv_model.best_estimator_
+print(BestRR)
+# We now test our model on the test data:
+BestRR.score(x_data[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']], y_data) 
+'''
+0.8411649831036152
+'''
+# Question #6):  Perform a grid search to find the best alpha value and check if using feature scaling improves the model.
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GridSearchCV
+scaler = StandardScaler()
+x_scaled = scaler.fit_transform(x_data[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']])
+
+# Define parameter grid without 'normalize'
+params = [{'alpha' : [0.001, 0.1, 1, 10, 100, 1000, 10000, 100000, 1000000] }]
+
+# Perform Grid Search
+ridge = Ridge()
+grid_s_model = GridSearchCV(ridge , params, cv = 4)
+grid_s_model.fit(x_scaled, y_data)
+
+# Best model
+print("Best estimator: ",grid_s_model.best_estimator_)
+print("Best Params: ",grid_s_model.best_params_['alpha'])
+'''
+Best estimator:  Ridge(alpha=100)
+Best Params:  100
+'''
