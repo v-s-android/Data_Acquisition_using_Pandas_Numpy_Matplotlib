@@ -163,3 +163,20 @@ plt.show()
 Using the raw data and the same set of features as used above, use GridSearchCV to identify the value of alpha for which the model performs best. 
 Assume the set of alpha values to be used as {0.0001, 0.001, 0.01, 0.1, 1, 10}
 '''
+
+# Create a Ridge instance and run Grid Search using a 4 fold cross validation.
+RidgeModel = Ridge()
+params = [{'alpha': [0.0001,0.001,0.01, 0.1, 1, 10]}]
+grid_search_cv = GridSearchCV(RidgeModel, params , cv = 4)
+
+# Fit the Grid Search to the training data.
+grid_search_cv.fit(x_train[['CPU_frequency', 'RAM_GB', 'Storage_GB_SSD', 'CPU_core', 'OS', 'GPU', 'Category']] , y_train)
+
+# Print the R^2 score for the test data using the estimator that uses the derived optimum value of alpha.
+BestRR = grid_search_cv.best_estimator_
+print("best estimator", BestRR) # best estimator Ridge(alpha=10)
+print("R^2 score for the test data using the estimator " , BestRR.score(x_test[['CPU_frequency', 'RAM_GB', 'Storage_GB_SSD', 'CPU_core', 'OS', 'GPU', 'Category']], y_test))
+'''
+best estimator Ridge(alpha=10)
+R^2 score for the test data using the estimator  0.3009905048691819
+'''
