@@ -75,3 +75,91 @@ print("standard deviation ", c_v_s.std())
 mean of the R^2 score  0.12738818019555026
 standard deviation  0.08317058010912008
 '''
+
+#Task 2: Overfitting
+'''
+Split the data set into training and testing components again, this time reserving 50% of the data set for testing.
+'''
+x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size = 0.5, random_state = 0)
+x_train.head() # just for checking
+
+'''
+To identify the point of overfitting the model on the parameter "CPU_frequency", you'll need to create polynomial features using the single attribute.
+You need to evaluate the R^2 scores of the model created using different degrees of polynomial features, ranging from 1 to 5. Save this set of values of R^2 score as a list.
+'''
+
+order = [1,2,3,4,5]
+lr = LinearRegression()
+res = []
+
+for n in order:
+    pr = PolynomialFeatures(degree = n)
+    x_train_pr = pr.fit_transform(x_train[['CPU_frequency']])
+    x_test_pr = pr.fit_transform(x_test[['CPU_frequency']])
+    lr.fit(x_train_pr, y_train) # fit the training set
+    # find the R^2 score on the testing set
+    res.append(lr.score(x_test_pr, y_test))
+
+print("R^2 scores list ", res) # R^2 scores list  [0.05322174176198158, -0.026920818679001313, 0.05156345792558126, -0.9948137915492898, -1.3759360955769684]
+
+# Plot the values of R^2 scores against the order. Note the point where the score drops.
+# import matplotlib.pyplot as plt
+
+plt.plot(order, r_square_test)
+plt.xlabel("Order")
+plt.ylabel("R^2 scores")
+plt.title("R^2 Using Test Data")
+plt.show() # the score drops at 3
+
+# Task 3 : Ridge Regression
+
+'''
+Now consider that you have multiple features, i.e. 'CPU_frequency', 'RAM_GB', 'Storage_GB_SSD', 'CPU_core','OS','GPU' and 'Category'.
+Create a polynomial feature model that uses all these parameters with degree=2. Also create the training and testing attribute sets.
+'''
+# x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size = 0.5, random_state = 0)
+pr = PolynomialFeatures(degree = 2)
+
+x_train_pr = pr.fit_transform(x_train[['CPU_frequency', 'RAM_GB', 'Storage_GB_SSD', 'CPU_core','OS','GPU', 'Category']])
+x_test_pr = pr.fit_transform(x_test[['CPU_frequency', 'RAM_GB', 'Storage_GB_SSD', 'CPU_core','OS','GPU', 'Category']])
+
+'''
+Create a Ridge Regression model and evaluate it using values of the hyperparameter alpha ranging from 0.001 to 1 with increments of 0.001.
+Create a list of all Ridge Regression R^2 scores for training and testing data.
+'''
+r_square_train = []
+r_square_test = []
+
+alpha_number = np.arange(0.001 , 1, 0.001) # 0.001 increment
+progress_bar = tqdm(alpha_number)
+# print(alpha_number) [0.001 0.002 0.003 0.004 0.005 0.006 0.007 0.008 0.009 0.01  0.011 0.012 0.013 0.014 0.015 0.016 ..]
+
+for alpha in progress_bar :
+    RidgeModel = Ridge(alpha = alpha) # alpha increments 0.001 each time
+    RidgeModel.fit(x_train_pr, y_train)
+
+    # R^2 scores for training and testing data.
+    train_score = RidgeModel.score(x_train_pr, y_train)
+    test_score = RidgeModel.score(x_test_pr , y_test)
+    
+    progress_bar.set_postfix({"train score" : train_score, "Test score": test_score }) # not required, but good to have
+    
+    r_square_train.append(train_score)
+    r_square_test.append(test_score)
+
+# Plot the R^2 values for training and testing sets with respect to the value of alpha
+plt.figure(figsize = (8,6))
+plt.plot(alpha_number , r_square_test , label = 'validation data')
+plt.plot(alpha_number, r_square_train, 'r' , label = 'training data')
+plt.xlabel('alpha')
+plt.ylabel('R^2 values')
+plt.title('R^2 using Training and testing data ')
+plt.ylim(0, 1)
+plt.legend()
+plt.show()
+
+# Task 4: Grid Search
+'''
+Using the raw data and the same set of features as used above, use GridSearchCV to identify the value of alpha for which the model performs best. 
+Assume the set of alpha values to be used as {0.0001, 0.001, 0.01, 0.1, 1, 10}
+'''
