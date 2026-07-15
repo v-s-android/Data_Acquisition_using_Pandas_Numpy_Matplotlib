@@ -53,3 +53,51 @@ df.head()
 # cleaning the data
 # Now, replace the '?' entries with 'NaN' values. 
 df.replace( '?' , np.nan, inplace = True)
+
+# Task 2 : Data Wrangling
+# Use dataframe.info() to identify the columns that have some 'Null' (or NaN) information.
+df.info()
+'''
+ #   Column          Non-Null Count  Dtype  
+---  ------          --------------  -----  
+ 0   age             2767 non-null   object 
+ 1   gender          2771 non-null   int64  
+ 2   bmi             2771 non-null   float64
+ 3   no_of_children  2771 non-null   int64  
+ 4   smoker          2764 non-null   object 
+ 5   region          2771 non-null   int64  
+ 6   charges         2771 non-null   float64
+'''
+# Handle missing data:
+'''
+- For continuous attributes (e.g., age), replace missing values with the mean.
+- For categorical attributes (e.g., smoker), replace missing values with the most frequent value.
+- Update the data types of the respective columns.
+- Verify the update using df.info().
+'''
+
+print(df['smoker'].value_counts())
+'''
+smoker
+0    2201
+1     563
+'''
+smoker_frequency = df['smoker'].value_counts().idxmax()
+df['smoker'] = df['smoker'].replace(np.nan , smoker_frequency)
+
+mean_age = df['age'].astype('float').mean(axis = 0) # using astype as int gives an error
+df['age'] = df['age'].fillna(mean_age)
+# or you can do df['age'].fillna(mean_age, inplace=True)
+'''
+axis=0 → perform the operation down the rows (vertically), producing a result for each column.
+axis=1 → perform the operation across the columns (horizontally), producing a result for each row.
+'''
+# Update data types
+df[["age","smoker"]] = df[["age","smoker"]].astype('int')
+
+'''
+Also note, that the `charges` column has values which are more than 2 decimal places long. Update the `charges` column such that all values are rounded 
+to nearest 2 decimal places. Verify conversion by printing the first 5 values of the updated dataframe.
+'''
+df['charges'] = np.round(df['charges'],2)
+df.head()
