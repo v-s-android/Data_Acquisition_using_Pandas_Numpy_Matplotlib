@@ -112,3 +112,103 @@ print("number of NaN values for the column bathrooms :", df['bathrooms'].isnull(
 number of NaN values for the column bedrooms : 0
 number of NaN values for the column bathrooms : 0
 '''
+
+'''
+Module 3: Exploratory Data Analysis
+Question 3
+Use the method value_counts to count the number of houses with unique floor values, use the method .to_frame() to convert it to a data frame. 
+'''
+df['floors'].value_counts().to_frame()
+
+'''
+Question 4
+Use the function boxplot in the seaborn library to determine whether houses with a waterfront view or without a waterfront view have more price outliers.
+'''
+sns.boxplot(x = "waterfront" , y = "price" , data = df)
+
+'''
+Question 5
+Use the function regplot in the seaborn library to determine if the feature sqft_above is negatively or positively correlated with price. 
+'''
+sns.regplot(x = "sqft_above" , y = "price", data = df)
+
+# We can use the Pandas method corr() to find the feature other than price that is most correlated with price.
+df_numeric = df.select_dtypes(include=[np.number])
+df_numeric.corr()['price'].sort_values()
+'''
+zipcode         -0.053203 # except zipcode, everything else is posivilty correlated
+long             0.021626
+condition        0.036362
+yr_built         0.054012
+sqft_lot15       0.082447
+sqft_lot         0.089661
+yr_renovated     0.126434
+floors           0.256794
+waterfront       0.266369
+lat              0.307003
+bedrooms         0.308797
+sqft_basement    0.323816
+view             0.397293
+bathrooms        0.525738
+sqft_living15    0.585379
+sqft_above       0.605567
+grade            0.667434
+sqft_living      0.702035
+price            1.000000
+Name: price, dtype: float64
+'''
+
+'''
+Module 4: Model Development
+We can Fit a linear regression model using the longitude feature 'long' and caculate the R^2.
+'''
+X = df[['long']]
+Y = df['price']
+lm = LinearRegression()
+lm.fit(X,Y)
+lm.score(X, Y) # 0.00046769430149007363
+'''
+Question 6
+Fit a linear regression model to predict the 'price' using the feature 'sqft_living' then calculate the R^2. 
+'''
+lm.fit(df[['sqft_living']], Y)
+print("R^2: ", lm.score(df[['sqft_living']] , Y)) # R^2:  0.4928532179037931
+
+'''
+Question 7
+Fit a linear regression model to predict the 'price' using the list of features,
+Then calculate the R^2. Take a screenshot of your code and the value of the R^2. You will need to submit it for the final project.
+'''
+features = df[["floors", "waterfront","lat" ,"bedrooms" ,"sqft_basement" ,"view" ,"bathrooms","sqft_living15","sqft_above","grade","sqft_living"]]
+lm.fit(features , Y)
+print("R^2: ", lm.score(features, Y)) # R^2:  0.6576890354915759
+
+'''
+This will help with Question 8:
+Create a list of tuples, the first element in the tuple contains the name of the estimator:
+
+'scale'
+'polynomial'
+'model'
+
+The second element in the tuple contains the model constructor
+
+StandardScaler()
+PolynomialFeatures(include_bias=False)
+LinearRegression()
+'''
+Input=[('scale',StandardScaler()),('polynomial', PolynomialFeatures(include_bias=False)),('model',LinearRegression())]
+
+'''
+Question 8
+Use the list to create a pipeline object to predict the 'price', fit the object using the features in the list features, and calculate the R^2. 
+'''
+from sklearn.metrics import r2_score
+
+pipe = Pipeline(Input)
+features = features.astype(float) # converting all values to float 
+pipe.fit(features, df['price'])
+y_hat = pipe.predict(features)
+print("r2_score is :", r2_score(df['price'], y_hat)) # r2_score is : 0.7512051345272872
+
+
