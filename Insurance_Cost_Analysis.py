@@ -101,3 +101,52 @@ to nearest 2 decimal places. Verify conversion by printing the first 5 values of
 '''
 df['charges'] = np.round(df['charges'],2)
 df.head()
+
+# Task 3 : Exploratory Data Analysis (EDA)
+# Implement the regression plot for charges with respect to bmi.
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+sns.regplot(x = "bmi" , y = "charges" , data = df , line_kws={"color": "red"})
+plt.ylim(0,)
+plt.show()
+
+# Implement the box plot for charges with respect to smoker.
+sns.boxplot( x = "smoker" , y = "charges" , data = df)
+plt.show()
+
+# Print the correlation matrix for the dataset.
+df.corr()
+
+# Task 4 : Model Development
+# Fit a linear regression model that may be used to predict the charges value, just by using the smoker attribute of the dataset. Print the score of this model.
+lr = LinearRegression()
+lr.fit(df[['smoker']], df['charges'])
+print(" R^2 of lr ",lr.score(df[['smoker']], df['charges'])) # R^2 of lr  0.6227430402464125
+
+'''
+Fit a linear regression model that may be used to predict the `charges` value, just by using all other attributes of the dataset. 
+Print the $ R^2 $ score of this model. You should see an improvement in the performance.
+'''
+x = df[['age', 'gender', 'bmi',	'no_of_children', 'smoker', 'region']]
+y = df['charges']
+lr.fit(x, y)
+print("R^2 of multiple linear regression ", lr.score(x,y)) # R^2 of multiple linear regression  0.7505888664568174
+
+'''
+Create a training pipeline that uses `StandardScaler()`, `PolynomialFeatures()` and `LinearRegression()` to create a model that can predict the `charges`
+value using all the other attributes of the dataset. There should be even further improvement in the performance.
+'''
+
+Z = df[["age", "gender", "bmi", "no_of_children", "smoker", "region"]]
+# List of tuples
+Input = [('scale', StandardScaler()), ('polynomial', PolynomialFeatures(include_bias = False)), ('model', LinearRegression())]
+pipe = Pipeline(Input)
+Z = Z.astype('float') # converting all columns into float
+
+#fit the model
+pipe.fit(Z, df['charges'])
+
+# predict based on Z
+y_predict = pipe.predict(Z)
+print("the r2_score ", r2_score( df['charges'] , y_predict)) # the r2_score  0.8453681600043882
