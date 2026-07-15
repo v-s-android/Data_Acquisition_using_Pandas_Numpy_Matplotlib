@@ -150,3 +150,32 @@ pipe.fit(Z, df['charges'])
 # predict based on Z
 y_predict = pipe.predict(Z)
 print("the r2_score ", r2_score( df['charges'] , y_predict)) # the r2_score  0.8453681600043882
+
+# NOTE: THE R2 score keeps getting better with multiple linear regression ans more better with using Pipeline
+
+#Task 5 : Model Refinement
+#Split the data into training and testing subsets, assuming that 20% of the data will be reserved for testing.
+
+Z = df[["age", "gender", "bmi", "no_of_children", "smoker", "region"]]
+Y = df['charges']
+
+x_train, x_test, y_train, y_test = train_test_split( Z, Y , test_size = 0.20, random_state = 1)
+
+# Initialize a Ridge regressor that used hyperparameter alpha = 0.1,  Fit the model using training data data subset. Print the R2 score for the testing data.
+RidgeModel = Ridge(alpha = 0.1)
+RidgeModel.fit(x_train, y_train)
+y_predict = RidgeModel.predict(x_test) # predict based on x_test
+print("the r2_score is :", r2_score(y_predict , y_test)) # the r2_score is : 0.6485184636292931
+
+'''
+Apply polynomial transformation to the training parameters with degree=2. Use this transformed feature set to fit the same regression model, 
+as above, using the training subset. Print the $ R^2 $ score for the testing subset.
+'''
+
+pr = PolynomialFeatures(degree = 2)
+x_train_pr = pr.fit_transform(x_train)
+x_test_pr = pr.fit_transform(x_test)
+
+RidgeModel.fit(x_train_pr, y_train)
+y_pr_hat = RidgeModel.predict(x_test_pr)
+print("the r2_score with plonomial features and Ridge model is ",r2_score(y_test, y_pr_hat)) # the r2_score with plonomial features and Ridge model is  0.8208413195172275
