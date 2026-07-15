@@ -211,4 +211,46 @@ pipe.fit(features, df['price'])
 y_hat = pipe.predict(features)
 print("r2_score is :", r2_score(df['price'], y_hat)) # r2_score is : 0.7512051345272872
 
+'''
+Module 5: Model Evaluation and Refinement
+Import the necessary modules:
+'''
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import train_test_split
+# We will split the data into training and testing sets:
 
+features =["floors", "waterfront","lat" ,"bedrooms" ,"sqft_basement" ,"view" ,"bathrooms","sqft_living15","sqft_above","grade","sqft_living"]    
+X = df[features]
+Y = df['price']
+
+x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.15, random_state=1)
+
+print("number of test samples:", x_test.shape[0])
+print("number of training samples:",x_train.shape[0])
+'''
+number of test samples: 3242
+number of training samples: 18371
+'''
+
+'''
+Question 9
+Create and fit a Ridge regression object using the training data, set the regularization parameter to 0.1, and calculate the R^2 using the test data.
+'''
+from sklearn.linear_model import Ridge
+RidgeModel = Ridge(alpha = 0.1)
+RidgeModel.fit(x_train , y_train)
+y_predict = RidgeModel.predict(x_test)
+print("r2_score is: ", r2_score(y_test, y_predict)) # r2_score is:  0.647875916393907
+
+'''
+Question 10
+Perform a second order polynomial transform on both the training data and testing data. Create and fit a Ridge regression object using the training data,
+set the regularisation parameter to 0.1, and calculate the R^2 utilising the test data provided.
+'''
+pr = PolynomialFeatures(degree = 2)
+x_train_pr = pr.fit_transform(x_train)
+x_test_pr = pr.fit_transform(x_test)
+RR = Ridge(alpha = 0.1)
+RR.fit(x_train_pr, y_train)
+y_rr_predict = RR.predict(x_test_pr)
+print("r2_score", r2_score(y_test, y_rr_predict)) # r2_score 0.7002744263583341
