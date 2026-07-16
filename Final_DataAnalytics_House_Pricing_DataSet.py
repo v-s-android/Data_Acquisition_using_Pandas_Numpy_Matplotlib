@@ -44,7 +44,7 @@ df.head()
 
 # Question 1
 # Display the data types of each column using the function dtypes. Take a screenshot of your code and output. You will need to submit the screenshot for the final project.
-df.info()
+df.dtypes
 '''
 Data columns (total 22 columns):
  #   Column         Non-Null Count  Dtype  
